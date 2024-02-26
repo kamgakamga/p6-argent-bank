@@ -8,8 +8,8 @@ export const LoginForm: FunctionComponent = () => {
       <h1>Sign In</h1>
       <form>
         <div className="input-wrapper">
-          <label htmlFor="username">Username</label>
-          <input type="text" id="username"/>
+          <label htmlFor="email">Username</label>
+          <input type="text" id="email"/>
         </div>
         <div className="input-wrapper">
           <label htmlFor="password">Password</label>

@@ -1,9 +1,8 @@
-import { combineReducers } from "@reduxjs/toolkit";
-import userReducer from "./user.reducer";
-import postReducer from "./post.reducer";
+import { combineReducers } from "redux";
+import auth from "./auth";
+import message from "./message";
 
 export default combineReducers({
-   //ISTE DES REDUCER
-   userReducer,
-   postReducer 
-})
+  auth,
+  message,
+});

@@ -6,81 +6,94 @@ import {
     LOGOUT,
     SET_MESSAGE,
   } from "./types";
-  
-  import AuthService from "../services/auth.service";
-  
-//   export const register = (username, email, password) => (dispatch) => {
-//     return AuthService.register(username, email, password).then(
-//       (response) => {
-//         dispatch({
-//           type: REGISTER_SUCCESS,
-//         });
-  
-//         dispatch({
-//           type: SET_MESSAGE,
-//           payload: response.data.message,
-//         });
-  
-//         return Promise.resolve();
-//       },
-//       (error) => {
-//         const message =
-//           (error.response &&
-//             error.response.data &&
-//             error.response.data.message) ||
-//           error.message ||
-//           error.toString();
-  
-//         dispatch({
-//           type: REGISTER_FAIL,
-//         });
-  
-//         dispatch({
-//           type: SET_MESSAGE,
-//           payload: message,
-//         });
-  
-//         return Promise.reject();
-//       }
-//     );
-//   };
-  
-  export const login = (username : string, password : string) => (dispatch : any) => {
-    return AuthService.login(username, password).then(
-      (data) => {
-        dispatch({
-          type: LOGIN_SUCCESS,
-          payload: { user: data },
+ 
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { setMessage } from "./message";
+
+import AuthService from "../services/auth.service"; 
+
+const userJON = localStorage.getItem("user");
+let  user ;
+if (userJON) {
+   user = JSON.parse(userJON);
+}
+
+export const register = createAsyncThunk(
+  "auth/register",
+  async (userData: any, thunkAPI) => {
+    try {
+      const response = await AuthService.register(userData);
+      thunkAPI.dispatch(setMessage(response.data.message));
+      return response.data;
+    } catch (error) {
+      const errorMessage = 
+        (error instanceof Error) ? error.message :
+        (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') ? error.message :
+        'An error occurred';
+      
+      thunkAPI.dispatch(setMessage({message :errorMessage}));
+      throw new Error(errorMessage);
+    }
+  }
+);
+
+export const login = createAsyncThunk(
+  "login",
+  async (userCredential: any, thunkAPI) => {
+    try {
+      const data = await AuthService.login(userCredential);
+      return { user: data };
+    } catch (error) {
+      const errorMessage =
+        (error instanceof Error) ? error.message :
+        (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') ? error.message :
+        'An error occurred';
+
+      thunkAPI.dispatch(setMessage({message :errorMessage}));
+      throw new Error(errorMessage);
+    }
+  }
+);
+
+
+export const logout = createAsyncThunk("logout", async () => {
+  await AuthService.logout();
+});
+
+const initialState = user
+  ? { isLoggedIn: true, user }
+  : { isLoggedIn: false, user: null };
+
+  const authSlice = createSlice({
+    name: "auth",
+    initialState,
+    reducers: {
+      // Définissez vos réducteurs ici si nécessaire
+    },
+    extraReducers: (builder) => {
+      builder
+        .addCase(register.fulfilled, (state :any, action:any) => {
+          state.isLoggedIn = false;
+        })
+        .addCase(register.rejected, (state :any, action :any) => {
+          state.isLoggedIn = false;
+        })
+        .addCase(login.fulfilled, (state :any, action :any) => {
+          state.isLoggedIn = true;
+          state.user = action.payload.user;
+        })
+        .addCase(login.rejected, (state : any, action : any) => {
+          state.isLoggedIn = false;
+          state.user = null;
+        })
+        .addCase(logout.fulfilled, (state :any, action :any) => {
+          state.isLoggedIn = false;
+          state.user = null;
         });
+    },
+  });
   
-        return Promise.resolve();
-      },
-      (error) => {
-        const message =
-          (error.response &&
-            error.response.data &&
-            error.response.data.message) ||
-          error.message ||
-          error.toString();
   
-        dispatch({
-          type: LOGIN_FAIL,
-        });
-  
-        dispatch({
-          type: SET_MESSAGE,
-          payload: message,
-        });
-  
-        return Promise.reject();
-      }
-    );
-  };
-  
-  export const logout = () => (dispatch : any) => {
-    AuthService.logout();
-  
-    dispatch({
-      type: LOGOUT,
-    });
-  };
+
+const { reducer } = authSlice;
+export default reducer;

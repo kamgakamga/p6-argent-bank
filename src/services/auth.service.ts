@@ -7,21 +7,17 @@ export const UPDATE_USER_PROFILE ="UPDATE_USER_PROFILE";
 
 
 //url de base
-const BASE_URL = 'http://localhost:3001/api/v1/';
+const BASE_URL = 'http://localhost:3001/api/v1/user/';
 
 
 //service de connxion
-const login = (username : string , password : string) => {
+const login = (userCredential:any) => {
   return axios
-    .post(`${BASE_URL + 'user/login'}`,{
-      username,
-      password,
-    })
+    .post(`${BASE_URL + 'login'}`,userCredential)
     .then((response) => {
-      if (response.data.accessToken) {
+      if (response.data.body.token) {        
         localStorage.setItem("user", JSON.stringify(response.data));
       }
-
       return response.data;
     });
 };
@@ -31,9 +27,14 @@ const logout = () => {
   localStorage.removeItem("user");
 };
 
+const register = (userData: any) => {
+  return axios.post(BASE_URL + "signup",userData);
+};
+
 const authService = {
   login,
   logout,
+  register
 };
 
 export default authService;

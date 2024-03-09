@@ -1,12 +1,3 @@
-import {
-    REGISTER_SUCCESS,
-    REGISTER_FAIL,
-    LOGIN_SUCCESS,
-    LOGIN_FAIL,
-    LOGOUT,
-    SET_MESSAGE,
-  } from "./types";
- 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { setMessage } from "./message";
 
@@ -35,10 +26,10 @@ export const register = createAsyncThunk(
       throw new Error(errorMessage);
     }
   }
-);
+) as any;
 
 export const login = createAsyncThunk(
-  "login",
+  "auth/login",
   async (userCredential: any, thunkAPI) => {
     try {
       const data = await AuthService.login(userCredential);
@@ -53,10 +44,10 @@ export const login = createAsyncThunk(
       throw new Error(errorMessage);
     }
   }
-);
+)  as any;
 
 
-export const logout = createAsyncThunk("logout", async () => {
+export const logout = createAsyncThunk("auth/logout", async () => {
   await AuthService.logout();
 });
 

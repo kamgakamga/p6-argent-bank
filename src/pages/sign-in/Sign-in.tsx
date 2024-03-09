@@ -4,24 +4,29 @@ import { useDispatch, useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
 import { login } from "../../actions/auth";
 import { clearMessage } from "../../actions/message";
+import { RootState } from './../../reducers/types';
+
 
 
 
 const SignIn: FunctionComponent = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   let navigate = useNavigate();
   const dispatch = useDispatch();
+  
+  const [loading, setLoading] = useState(false);
+
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const message = useSelector((state: RootState) => state.message);
 
   const handleUsernameChange = (event: React.ChangeEvent<HTMLInputElement>)  : void  => {
-    setUsername(event.target.value);
+    setEmail(event.target.value);
   };
   const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) : void => {
     setPassword(event.target.value);
   };
-
-  const isLoggedIn = false;
 
   useEffect(() => {
     dispatch(clearMessage());
@@ -32,26 +37,28 @@ const SignIn: FunctionComponent = () => {
     password: "",
   };
   
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault(); 
     const user = {
-      username,
+      email,
       password
     };
-      console.log(username);
-      console.log(password);
+    setLoading(true);
+      console.log('username:',email);
+      console.log('password:',password);
 
-    try {
-      login(user);
-      dispatch(clearMessage());
-      // Connexion réussie, effectuez les actions nécessaires ici (par exemple, redirection, rechargement de la page, etc.)
-    } catch (error) {
-      console.error('Erreur lors de la connexion:', error);
-      // Gérez l'erreur de connexion ici (par exemple, affichez un message d'erreur à l'utilisateur)
-    }
-  };
-
+      dispatch(login(user))
+      .unwrap()
+      .then(() => {
+        navigate("/user");
+        window.location.reload();
+      })
+      .catch(() => {
+        setLoading(false);
+      });
+  }
   if (isLoggedIn) {
-    return <Navigate to="/profile" />;
+    return <Navigate to="/user" />;
   }
 
 
@@ -64,8 +71,8 @@ const SignIn: FunctionComponent = () => {
       <h1>Sign In</h1>
       <form onSubmit={handleLogin}>
         <div className="input-wrapper">
-          <label htmlFor="username">Username</label>
-          <input type="text" id="username" name='username' onChange={e => handleUsernameChange(e)}/>
+          <label htmlFor="email">Username</label>
+          <input type="text" id="email" name='email' onChange={e => handleUsernameChange(e)}/>
         </div>
         <div className="input-wrapper">
           <label htmlFor="password">Password</label>
